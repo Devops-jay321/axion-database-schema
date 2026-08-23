@@ -2,7 +2,7 @@
 -- Axion v1 - Telemetry Table
 -- ============================================
 
-CREATE TABLE telemetry (
+CREATE TABLE IF NOT EXISTS telemetry (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     device_id VARCHAR(50) NOT NULL,

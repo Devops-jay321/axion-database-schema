@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: axion-postgres-sql
+  namespace: axion-app
+  labels:
+    app: axion-postgres
+spec:
+  selector:
+    matchLabels:
+      app: axion-postgres
+  template:
+    metadata:
+      labels:
+        app: axion-postgres
+    spec:
+      containers:
+        - name: axion-postgres-sql
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "jaydeepc1985"
+
+            - name: POSTGRES_PASSWORD
+              value: "Oneday@321"
+
+            - name: POSTGRES_DB
+              value: "axion-db"
+
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+
+          volumeMounts:
+            - name: axion-postgres-storage
+              mountPath: /var/lib/postgresql/data
+
+      volumes:
+        - name: axion-postgres-storage
+          persistentVolumeClaim:
+            claimName: axion-pgdb-pvc

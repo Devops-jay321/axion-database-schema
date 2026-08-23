@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  01-extensions.sql: "-- ============================================\r\n-- Axion
+    v1 - Extensions\r\n-- ============================================\r\n-- Enable
+    UUID generation via pgcrypto\r\nCREATE EXTENSION IF NOT EXISTS \"pgcrypto\";\r\n"
+  02-telemetry.sql: "-- ============================================\r\n-- Axion v1
+    - Telemetry Table\r\n-- ============================================\r\n\r\nCREATE
+    TABLE telemetry (\r\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\r\n\r\n
+    \   device_id VARCHAR(50) NOT NULL,\r\n    device_type VARCHAR(20) NOT NULL,\r\n
+    \   refinery_region VARCHAR(50) NOT NULL,\r\n\r\n    timestamp TIMESTAMP NOT NULL,\r\n\r\n
+    \   temperature DOUBLE PRECISION NOT NULL,\r\n    vibration DOUBLE PRECISION NOT
+    NULL,\r\n    current DOUBLE PRECISION NOT NULL,\r\n\r\n    created_at TIMESTAMP
+    DEFAULT CURRENT_TIMESTAMP\r\n);\r\n\r\n-- Indexes for telemetry queries\r\nCREATE
+    INDEX idx_telemetry_device_id\r\nON telemetry(device_id);\r\n\r\nCREATE INDEX
+    idx_telemetry_timestamp\r\nON telemetry(timestamp DESC);\r\n"
+kind: ConfigMap
+metadata:
+  name: axion-db-schema
+  namespace: axion-app

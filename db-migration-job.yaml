@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: axion-db-migration
+  namespace: axion-app
+
+spec:
+  backoffLimit: 5
+
+  template:
+    metadata:
+      labels:
+        app: axion-db-migration
+
+    spec:
+      restartPolicy: OnFailure
+
+      containers:
+        - name: db-migration
+          image: postgres:16
+
+          env:
+            - name: PGHOST
+              value: "axion-postgres-service"
+
+            - name: PGPORT
+              value: "5432"
+
+            - name: PGUSER
+              value: "jaydeepc1985"
+
+            - name: PGPASSWORD
+              value: "Oneday@321"
+
+            - name: PGDATABASE
+              value: "axion-db"
+
+          volumeMounts:
+            - name: db-schema
+              mountPath: /schema
+              readOnly: true
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "======================================"
+              echo "Waiting for PostgreSQL..."
+              echo "======================================"
+
+              until pg_isready \
+                -h "$PGHOST" \
+                -p "$PGPORT" \
+                -U "$PGUSER" \
+                -d "$PGDATABASE"
+              do
+                echo "PostgreSQL is not ready. Retrying in 5 seconds..."
+                sleep 5
+              done
+
+              echo "PostgreSQL is ready."
+
+              echo "======================================"
+              echo "Running 01-extensions.sql"
+              echo "======================================"
+
+              psql -v ON_ERROR_STOP=1 \
+                -f /schema/01-extensions.sql
+
+              echo "01-extensions.sql completed."
+
+              echo "======================================"
+              echo "Running 02-telemetry.sql"
+              echo "======================================"
+
+              psql -v ON_ERROR_STOP=1 \
+                -f /schema/02-telemetry.sql
+
+              echo "02-telemetry.sql completed."
+
+              echo "======================================"
+              echo "DATABASE MIGRATION COMPLETED"
+              echo "======================================"
+
+      volumes:
+        - name: db-schema
+          configMap:
+            name: axion-db-schema
